@@ -46,6 +46,7 @@ return [
         $events->subscribe(Listeners\SendPrivateDiscussionNotification::class);
 
         $events->subscribe(Access\DiscussionPolicy::class);
+        $events->subscribe(Access\PostPolicy::class);
 
         // Support for fof/split
         $events->subscribe(Listeners\AddRecipientsToSplitDiscussion::class);

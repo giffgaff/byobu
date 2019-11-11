@@ -24,11 +24,6 @@ class DiscussionPolicy extends AbstractPolicy
      */
     protected $model = Discussion::class;
 
-    private function actorCanViewFlaggedPds($actor)
-    {
-        return $actor->hasPermission('user.canViewFlaggedPds');
-    }
-
     /**
      * @param User            $actor
      * @param EloquentBuilder $query
@@ -36,7 +31,7 @@ class DiscussionPolicy extends AbstractPolicy
     public function findPrivate(User $actor, EloquentBuilder $query)
     {
         if ($actor->exists) {
-            if ($this->actorCanViewFlaggedPds($actor)) {
+            if ($actor->hasPermission('user.actorCanViewPrivateDiscussions')) {
                 $query->join('posts', 'posts.discussion_id', '=', 'discussions.id');
                 $query->join('flags', 'flags.post_id', '=', 'posts.id');
                 $query->orWhere('discussions.is_approved', true);

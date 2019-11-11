@@ -12,18 +12,18 @@ app.initializers.add('fof-byobu', app => {
   addSettingsModal();
 
   extend(PermissionGrid.prototype, 'moderateItems', items => {
-    items.add('view-flagged-pds', {
+    items.add('actor-can-view-private-discussions', {
       icon: 'fas fa-flag',
-      label: app.translator.trans('fof-byobu.admin.permission.view_flagged_pds'),
-      permission: 'user.canViewFlaggedPds'
+      label: app.translator.trans('fof-byobu.admin.permission.actor_can_view_private_discussions'),
+      permission: 'user.actorCanViewPrivateDiscussions'
     }, 1);
   });
   
   extend(PermissionGrid.prototype, 'moderateItems', items => {
-    items.add('view-all-flagged-pds', {
+    items.add('actor-can-view-only-flagged-posts', {
       icon: 'fas fa-flag',
-      label: app.translator.trans('fof-byobu.admin.permission.view_all_flagged_pds'),
-      permission: 'user.canViewAllFlaggedPds'
+      label: app.translator.trans('fof-byobu.admin.permission.actor_can_view_only_flagged_posts'),
+      permission: 'user.actorCanViewOnlyFlaggedPosts'
     }, 1);
   });
 });
