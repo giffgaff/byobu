@@ -16,13 +16,18 @@ use Flarum\User\AbstractPolicy;
 use Flarum\User\User;
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Database\Query\Builder;
+use Flarum\Extension\ExtensionManager;
 
 class DiscussionPolicy extends AbstractPolicy
 {
-    /**
-     * {@inheritdoc}
-     */
+    protected $extensions;
+
     protected $model = Discussion::class;
+
+    public function __construct(ExtensionManager $extensions)
+    {
+        $this->extensions = $extensions;
+    }
 
     /**
      * @param User            $actor
@@ -31,7 +36,7 @@ class DiscussionPolicy extends AbstractPolicy
     public function findPrivate(User $actor, EloquentBuilder $query)
     {
         if ($actor->exists) {
-            if ($actor->hasPermission('user.actorCanViewPrivateDiscussions')) {
+            if ($this->extensions->isEnabled('flarum-flags') && $actor->hasPermission('user.actorCanViewPrivateDiscussions')) {
                 $query->join('posts', 'posts.discussion_id', '=', 'discussions.id');
                 $query->join('flags', 'flags.post_id', '=', 'posts.id');
                 $query->orWhere('discussions.is_approved', true);
