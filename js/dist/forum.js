@@ -508,7 +508,7 @@ __webpack_require__.r(__webpack_exports__);
   _components_PrivateDiscussionComposer__WEBPACK_IMPORTED_MODULE_1__["default"].prototype.chooseRecipients = function () {
     var _this = this;
 
-    var tagsClassName = '.RecipientsInput-selected > .RecipientLabel:first-child';
+    var actorRecipientClassName = '.RecipientsInput-selected > .RecipientLabel:first-child';
     app.modal.show(new _components_AddRecipientModal__WEBPACK_IMPORTED_MODULE_2__["default"]({
       selectedRecipients: this.recipients,
       onsubmit: function onsubmit(recipients) {
@@ -517,7 +517,7 @@ __webpack_require__.r(__webpack_exports__);
         _this.$('.RecipientsInput').focus();
       }
     }));
-    $(tagsClassName).css('display', 'none');
+    $(actorRecipientClassName).css('display', 'none');
   }; // Add a tag-selection menu to the discussion composer's header, after the
   // title.
 

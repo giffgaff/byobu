@@ -35,7 +35,7 @@ export default function (app) {
 
     // Add a recipient selection modal when clicking the recipient tag label.
     PrivateDiscussionComposer.prototype.chooseRecipients = function () {
-        const tagsClassName = '.RecipientsInput-selected > .RecipientLabel:first-child';
+        const actorRecipientClassName = '.RecipientsInput-selected > .RecipientLabel:first-child';
         app.modal.show(
             new AddRecipientModal({
                 selectedRecipients: this.recipients,
@@ -47,7 +47,7 @@ export default function (app) {
                 }
             })
         )
-        $(tagsClassName).css('display', 'none');
+        $(actorRecipientClassName).css('display', 'none');
     };
 
     // Add a tag-selection menu to the discussion composer's header, after the
