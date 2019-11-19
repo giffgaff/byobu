@@ -19,8 +19,8 @@ export default function () {
                     const deferred = m.deferred();
 
                     let recipients = new ItemList();
-                    recipients.add('users:' + user.id(), user);
                     recipients.add('users:' + app.session.user.id(), app.session.user);
+                    recipients.add('users:' + user.id(), user);
 
                     PrivateDiscussionComposer.prototype.recipients = recipients;
 

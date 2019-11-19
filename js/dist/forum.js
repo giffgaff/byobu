@@ -289,8 +289,8 @@ __webpack_require__.r(__webpack_exports__);
         onclick: function onclick() {
           var deferred = m.deferred();
           var recipients = new flarum_utils_ItemList__WEBPACK_IMPORTED_MODULE_4___default.a();
-          recipients.add('users:' + user.id(), user);
           recipients.add('users:' + app.session.user.id(), app.session.user);
+          recipients.add('users:' + user.id(), user);
           _components_PrivateDiscussionComposer__WEBPACK_IMPORTED_MODULE_2__["default"].prototype.recipients = recipients;
           var component = new _components_PrivateDiscussionComposer__WEBPACK_IMPORTED_MODULE_2__["default"]();
           app.composer.load(component);
