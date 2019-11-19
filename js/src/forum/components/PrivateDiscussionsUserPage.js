@@ -4,6 +4,7 @@ import Button from 'flarum/components/Button';
 import Dropdown from 'flarum/components/Dropdown';
 import LogInModal from 'flarum/components/LogInModal';
 import PrivateDiscussionComposer from './PrivateDiscussionComposer';
+import ItemList from 'flarum/utils/ItemList';
 
 export default class PrivateDiscussionsUserPage extends UserPage {
     init() {
@@ -34,7 +35,12 @@ export default class PrivateDiscussionsUserPage extends UserPage {
         const deferred = m.deferred();
 
         if (app.session.user) {
-            const component = new PrivateDiscussionComposer({ user: app.session.user });
+            let recipients = new ItemList();
+            recipients.add('users:' + app.session.user.id(), app.session.user);
+
+            PrivateDiscussionComposer.prototype.recipients = recipients;
+
+            const component = new PrivateDiscussionComposer();
 
             app.composer.load(component);
 

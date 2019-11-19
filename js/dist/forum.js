@@ -1561,6 +1561,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var flarum_components_LogInModal__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! flarum/components/LogInModal */ "flarum/components/LogInModal");
 /* harmony import */ var flarum_components_LogInModal__WEBPACK_IMPORTED_MODULE_5___default = /*#__PURE__*/__webpack_require__.n(flarum_components_LogInModal__WEBPACK_IMPORTED_MODULE_5__);
 /* harmony import */ var _PrivateDiscussionComposer__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./PrivateDiscussionComposer */ "./src/forum/components/PrivateDiscussionComposer.js");
+/* harmony import */ var flarum_utils_ItemList__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! flarum/utils/ItemList */ "flarum/utils/ItemList");
+/* harmony import */ var flarum_utils_ItemList__WEBPACK_IMPORTED_MODULE_7___default = /*#__PURE__*/__webpack_require__.n(flarum_utils_ItemList__WEBPACK_IMPORTED_MODULE_7__);
+
 
 
 
@@ -1605,9 +1608,10 @@ function (_UserPage) {
     var deferred = m.deferred();
 
     if (app.session.user) {
-      var component = new _PrivateDiscussionComposer__WEBPACK_IMPORTED_MODULE_6__["default"]({
-        user: app.session.user
-      });
+      var recipients = new flarum_utils_ItemList__WEBPACK_IMPORTED_MODULE_7___default.a();
+      recipients.add('users:' + app.session.user.id(), app.session.user);
+      _PrivateDiscussionComposer__WEBPACK_IMPORTED_MODULE_6__["default"].prototype.recipients = recipients;
+      var component = new _PrivateDiscussionComposer__WEBPACK_IMPORTED_MODULE_6__["default"]();
       app.composer.load(component);
       deferred.resolve(component);
     } else {
