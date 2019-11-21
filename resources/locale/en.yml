@@ -52,7 +52,7 @@ fof-byobu:
             create_private_discussions_with_blocking_users: Create private discussions with users that block it
             edit_user_recipients: Edit users partaking in private discussions
             edit_group_recipients: Edit groups partaking in private discussions
-            actor_can_view_private_discussions: Can view private discussions
+            actor_can_view_private_discussions-when-flagged: Can view private discussions when flagged
             actor_can_view_only_flagged_posts: Can view only flagged posts
 
         settings:

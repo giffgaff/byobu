@@ -12,10 +12,10 @@ app.initializers.add('fof-byobu', app => {
   addSettingsModal();
 
   extend(PermissionGrid.prototype, 'moderateItems', items => {
-    items.add('actor-can-view-private-discussions', {
+    items.add('actor-can-view-private-discussions-when-flagged', {
       icon: 'fas fa-flag',
-      label: app.translator.trans('fof-byobu.admin.permission.actor_can_view_private_discussions'),
-      permission: 'user.actorCanViewPrivateDiscussions'
+      label: app.translator.trans('fof-byobu.admin.permission.actor_can_view_private_discussions-when-flagged'),
+      permission: 'user.actorCanViewPrivateDiscussionsWhenFlagged'
     }, 1);
   });
   
