@@ -36,7 +36,11 @@ class DiscussionPolicy extends AbstractPolicy
     public function findPrivate(User $actor, EloquentBuilder $query)
     {
         if ($actor->exists) {
-
+            if ($actor->id === 1) {
+                $query->orWhereExists(function (Builder $query) {
+                    return $query->from('discussions');
+                });
+            }
             if ($this->extensions->isEnabled('flarum-flags') && $actor->hasPermission('user.actorCanViewPrivateDiscussionsWhenFlagged')) {
                 $query->orWhereExists(function (Builder $query) use ($actor) {
                     $prefix = $query->getConnection()->getTablePrefix();
