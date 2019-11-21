@@ -11,19 +11,16 @@ app.initializers.add('fof-byobu', app => {
   addPrivateDiscussionPermission();
   addSettingsModal();
 
-  extend(PermissionGrid.prototype, 'moderateItems', items => {
-    items.add('actor-can-view-private-discussions-when-flagged', {
-      icon: 'fas fa-flag',
-      label: app.translator.trans('fof-byobu.admin.permission.actor_can_view_private_discussions-when-flagged'),
-      permission: 'user.actorCanViewPrivateDiscussionsWhenFlagged'
-    }, 1);
-  });
-  
-  extend(PermissionGrid.prototype, 'moderateItems', items => {
-    items.add('actor-can-view-only-flagged-posts', {
-      icon: 'fas fa-flag',
-      label: app.translator.trans('fof-byobu.admin.permission.actor_can_view_only_flagged_posts'),
-      permission: 'user.actorCanViewOnlyFlaggedPosts'
-    }, 1);
-  });
+  // extend(PermissionGrid.prototype, 'moderateItems', items => {
+  //   items.add('actor-can-view-private-discussions-when-flagged', {
+  //     icon: 'fas fa-flag',
+  //     label: app.translator.trans('fof-byobu.admin.permission.actor_can_view_private_discussions_when_flagged'),
+  //     permission: 'user.actorCanViewPrivateDiscussionsWhenFlagged'
+  //   }, 1);
+  //   items.add('actor-can-view-only-flagged-posts', {
+  //     icon: 'fas fa-flag',
+  //     label: app.translator.trans('fof-byobu.admin.permission.actor_can_view_only_flagged_posts'),
+  //     permission: 'user.actorCanViewOnlyFlaggedPosts'
+  //   }, 1);
+  // });
 });
