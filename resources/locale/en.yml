@@ -53,7 +53,7 @@ fof-byobu:
             edit_user_recipients: Edit users partaking in private discussions
             edit_group_recipients: Edit groups partaking in private discussions
             actor_can_view_private_discussions_when_flagged: Can view private discussions when flagged
-            actor_can_view_only_flagged_posts: Can view only flagged posts
+            actor_can_view_only_flagged_posts: Can view private posts when flagged
 
         settings:
             byobu_users_page_label: Add private discussions to user page
