@@ -38,40 +38,53 @@ class DiscussionPolicy extends AbstractPolicy
         if ($actor->exists) {
             if ($actor->id === 1) {
                 $query->orWhereExists(function (Builder $query) {
-                    // Allow 'flarum-admin' to see all PDs, for Quality checks and/or debugging purposes
                     return $query->from('discussions');
                 });
             }
+            if ($this->extensions->isEnabled('flarum-flags') && $actor->hasPermission('user.actorCanViewPrivateDiscussionsWhenFlagged')) {
+                $query->orWhereExists(function (Builder $query) use ($actor) {
+                    $prefix = $query->getConnection()->getTablePrefix();
 
-            $query->orWhereExists(function (Builder $query) use ($actor) {
-                $prefix = $query->getConnection()->getTablePrefix();
+                    return $query->selectRaw('1')
+                        ->from('recipients')
+                        ->whereRaw($prefix . 'discussions.id = discussion_id')
+                        ->whereNull('removed_at')
+                        ->where(function (Builder $query) use ($actor) {
+                            $query->where('recipients.user_id', $actor->id);
 
-                $query->selectRaw('1')
-                    ->from('recipients')
-                    ->whereRaw($prefix . 'discussions.id = discussion_id')
-                    ->whereNull('removed_at')
-                    ->where(function (Builder $query) use ($actor) {
-                        $query->where('recipients.user_id', $actor->id);
-
-                        if (!$actor->groups->isEmpty()) {
-                            $query->orWhereIn('recipients.group_id', $actor->groups->pluck('id')->all());
+                            if (!$actor->groups->isEmpty()) {
+                                $query->orWhereIn('recipients.group_id', $actor->groups->pluck('id')->all());
+                            }
                         }
-                    });
+                    );
 
-                if ($this->extensions->isEnabled('flarum-flags') && $actor->hasPermission('user.actorCanViewPrivateDiscussionsWhenFlagged')) {
-                    $query->orWhereExists(function (Builder $query) {
-                        $prefix = $query->getConnection()->getTablePrefix();
+                })->orWhereExists(function (Builder $query) use ($actor) {
+                    $prefix = $query->getConnection()->getTablePrefix();
 
-                        return $query->selectRaw('1')
-                            ->from('flags')
-                            ->leftJoin('posts', 'flags.post_id', 'posts.id')
-                            ->whereRaw($prefix . 'discussions.id = ' . $prefix . 'posts.discussion_id')
-                            ->whereNull('flags.dismissed_at');
-                    });
-                }
+                    return $query->selectRaw('1')
+                        ->from('flags')
+                        ->leftJoin('posts', 'flags.post_id', 'posts.id')
+                        ->whereRaw($prefix . 'discussions.id = ' . $prefix . 'posts.discussion_id')
+                        ->whereNull('flags.dismissed_at');
+                });
 
-                return $query;
-            });
+            } else {
+                $query->orWhereExists(function (Builder $query) use ($actor) {
+                    $prefix = $query->getConnection()->getTablePrefix();
+
+                    return $query->selectRaw('1')
+                        ->from('recipients')
+                        ->whereRaw($prefix . 'discussions.id = discussion_id')
+                        ->whereNull('removed_at')
+                        ->where(function (Builder $query) use ($actor) {
+                            $query->where('recipients.user_id', $actor->id);
+
+                            if (!$actor->groups->isEmpty()) {
+                                $query->orWhereIn('recipients.group_id', $actor->groups->pluck('id')->all());
+                            }
+                        });
+                });
+            }
         }
     }
 
