@@ -43,7 +43,7 @@ fof-byobu:
             pd_added_text: "{username} added you to a private discussion"
             pd_added_label: "Someone adds me to an existing private discussion"
             pd_reply_label: Someone posts in a private discussion I'm a recipient of
-            pd_reply_text: "{username} replied in a private discusion you're a part of"
+            pd_reply_text: "{username} replied in a private discussion you're a part of"
 
     admin:
         permission:
