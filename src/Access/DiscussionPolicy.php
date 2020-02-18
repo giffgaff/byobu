@@ -36,50 +36,25 @@ class DiscussionPolicy extends AbstractPolicy
     public function findPrivate(User $actor, EloquentBuilder $query)
     {
         if ($actor->exists) {
-            if ($this->extensions->isEnabled('flarum-flags') && $actor->hasPermission('user.actorCanViewPrivateDiscussionsWhenFlagged')) {
-                $query->orWhereExists(function (Builder $query) use ($actor) {
-                    $prefix = $query->getConnection()->getTablePrefix();
+            $query->orWhereIn('discussions.id', function ($query) use ($actor) {
+                $query->select('discussion_id')
+                    ->from('recipients')
+                    ->whereNull('removed_at')
+                    ->where('user_id', $actor->id)
+                    ->orWhereIn('group_id', $actor->groups->pluck('id')->all());
+            });
 
-                    return $query->selectRaw('1')
-                        ->from('recipients')
-                        ->whereRaw($prefix . 'discussions.id = discussion_id')
-                        ->whereNull('removed_at')
-                        ->where(function (Builder $query) use ($actor) {
-                            $query->where('recipients.user_id', $actor->id);
-
-                            if (!$actor->groups->isEmpty()) {
-                                $query->orWhereIn('recipients.group_id', $actor->groups->pluck('id')->all());
-                            }
-                        }
-                    );
-
-                })->orWhereExists(function (Builder $query) use ($actor) {
-                    $prefix = $query->getConnection()->getTablePrefix();
-
-                    return $query->selectRaw('1')
+            if (
+                $this->extensions->isEnabled('flarum-flags') &&
+                $actor->hasPermission('user.viewPrivateDiscussionsWhenFlagged') &&
+                $actor->hasPermission('discussion.viewFlags')
+            ) {
+                $query->orWhereIn('discussions.id', function ($query) {
+                    $query->select('posts.discussion_id')
                         ->from('flags')
-                        ->leftJoin('posts', 'flags.post_id', 'posts.id')
-                        ->whereRaw($prefix . 'discussions.id = ' . $prefix . 'posts.discussion_id')
-                        ->whereNull('flags.dismissed_at');
+                        ->leftJoin('posts', 'flags.post_id', 'posts.id');
                 });
-
-            } else {
-                $query->orWhereExists(function (Builder $query) use ($actor) {
-                    $prefix = $query->getConnection()->getTablePrefix();
-
-                    return $query->selectRaw('1')
-                        ->from('recipients')
-                        ->whereRaw($prefix . 'discussions.id = discussion_id')
-                        ->whereNull('removed_at')
-                        ->where(function (Builder $query) use ($actor) {
-                            $query->where('recipients.user_id', $actor->id);
-
-                            if (!$actor->groups->isEmpty()) {
-                                $query->orWhereIn('recipients.group_id', $actor->groups->pluck('id')->all());
-                            }
-                        });
-                });
-            }
+            };
         }
     }
 
