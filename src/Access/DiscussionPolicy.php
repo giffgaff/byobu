@@ -46,7 +46,7 @@ class DiscussionPolicy extends AbstractPolicy
 
             if (
                 $this->extensions->isEnabled('flarum-flags') &&
-                $actor->hasPermission('user.viewPrivateDiscussionsWhenFlagged') &&
+                $actor->hasPermission('user.actorCanViewPrivateDiscussionsWhenFlagged') &&
                 $actor->hasPermission('discussion.viewFlags')
             ) {
                 $query->orWhereIn('discussions.id', function ($query) {
