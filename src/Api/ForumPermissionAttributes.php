@@ -26,11 +26,9 @@ class ForumPermissionAttributes
     {
         $actor = $serializer->getActor();
         $users = $actor->can('discussion.startPrivateDiscussionWithUsers');
-        $groups = $actor->can('discussion.startPrivateDiscussionWithGroups');
 
-        $attributes['canStartPrivateDiscussion'] = $users || $groups;
+        $attributes['canStartPrivateDiscussion'] = $users;
         $attributes['canStartPrivateDiscussionWithUsers'] = $users;
-        $attributes['canStartPrivateDiscussionWithGroups'] = $groups;
         $attributes['canStartPrivateDiscussionWithBlockers'] = $actor->can('discussion.startPrivateDiscussionWithBlockers');
 
         return $attributes;

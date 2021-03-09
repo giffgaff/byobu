@@ -27,11 +27,9 @@ class DiscussionPermissionAttributes
     {
         $actor = $serializer->getActor();
         $users = $actor->can('editUserRecipients', $model);
-        $groups = $actor->can('editGroupRecipients', $model);
 
-        $attributes['canEditRecipients'] = $users || $groups;
+        $attributes['canEditRecipients'] = $users;
         $attributes['canEditUserRecipients'] = $users;
-        $attributes['canEditGroupRecipients'] = $groups;
 
         return $attributes;
     }

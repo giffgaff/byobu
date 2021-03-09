@@ -3,12 +3,11 @@ import AddRecipientModal from '../../modals/AddRecipientModal';
 import ItemList from 'flarum/utils/ItemList';
 import recipientCountLabel from "../labels/recipientCountLabel";
 import User from 'flarum/models/User';
-import Group from 'flarum/models/Group';
 
 export default class PrivateDiscussionComposer extends DiscussionComposer {
     static initAttrs(attrs) {
         super.initAttrs(attrs);
-    
+
         attrs.titlePlaceholder = app.translator.trans('fof-byobu.forum.composer_private_discussion.title_placeholder');
         attrs.submitLabel = app.translator.trans('fof-byobu.forum.composer_private_discussion.submit_button');
       }
@@ -19,7 +18,6 @@ export default class PrivateDiscussionComposer extends DiscussionComposer {
         this.composer.fields.recipients = this.attrs.recipients || new ItemList();
 
         this.composer.fields.recipientUsers = this.attrs.recipientUsers || [];
-        this.composer.fields.recipientGroups = this.attrs.recipientGroups || [];
 
         const username = m.route.param('username');
 
@@ -32,14 +30,9 @@ export default class PrivateDiscussionComposer extends DiscussionComposer {
         let data = super.data();
 
         const users = [];
-        const groups = [];
         this.composer.fields.recipients.toArray().forEach((recipient) => {
             if (recipient instanceof User) {
                 users.push(recipient);
-            }
-
-            if (recipient instanceof Group) {
-                groups.push(recipient);
             }
         });
 
@@ -47,10 +40,6 @@ export default class PrivateDiscussionComposer extends DiscussionComposer {
 
         if (users.length) {
             data.relationships.recipientUsers = users;
-        }
-
-        if (groups.length) {
-            data.relationships.recipientGroups = groups;
         }
 
         delete data.relationships.tags;

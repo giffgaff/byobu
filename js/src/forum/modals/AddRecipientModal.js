@@ -6,7 +6,6 @@ import Stream from 'flarum/utils/Stream';
 import SearchState from 'flarum/states/SearchState';
 import RecipientSearch from '../search/RecipientSearch';
 import User from 'flarum/models/User';
-import Group from 'flarum/models/Group';
 
 export default class AddRecipientModal extends Modal {
     oninit(vnode) {
@@ -35,9 +34,6 @@ export default class AddRecipientModal extends Modal {
     assignInitialRecipients(discussion) {
         discussion.recipientUsers().map((user) => {
             this.selected().add('users:' + user.id(), user);
-        });
-        discussion.recipientGroups().map((group) => {
-            this.selected().add('groups:' + group.id(), group);
         });
     }
 
@@ -98,21 +94,17 @@ export default class AddRecipientModal extends Modal {
         const discussion = this.attrs.discussion;
         const recipients = this.selected();
 
-        let recipientGroups = [];
         let recipientUsers = [];
 
         recipients.toArray().forEach((recipient) => {
             if (recipient instanceof User) {
                 recipientUsers.push(recipient);
             }
-            if (recipient instanceof Group) {
-                recipientGroups.push(recipient);
-            }
         });
 
         // Recipients are updated here for existing discussions here.
         if (discussion) {
-            discussion.save({ relationships: { recipientUsers, recipientGroups } }).then(() => {
+            discussion.save({ relationships: { recipientUsers } }).then(() => {
                 if (app.current instanceof DiscussionPage) {
                     app.current.stream.update();
                 }

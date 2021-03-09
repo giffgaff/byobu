@@ -11,7 +11,6 @@ export default class RecipientsModified extends EventPost {
 
         const content = attrs.post.content();
 
-        // For event posts existing before groups functionality.
         if (!content['new'] && content.length == 2) {
             const oldRecipients = attrs.post.content()[0];
             const newRecipients = attrs.post.content()[1];
@@ -20,11 +19,9 @@ export default class RecipientsModified extends EventPost {
         } else {
             let usersAdded = diff(content['new']['users'], content['old']['users'], 'users');
             let usersRemoved = diff(content['old']['users'], content['new']['users'], 'users');
-            let groupsAdded = diff(content['new']['groups'], content['old']['groups'], 'groups');
-            let groupsRemoved = diff(content['old']['groups'], content['new']['groups'], 'groups');
 
-            attrs.added = usersAdded.concat(groupsAdded);
-            attrs.removed = usersRemoved.concat(groupsRemoved);
+            attrs.added = usersAdded;
+            attrs.removed = usersRemoved;
         }
     }
 

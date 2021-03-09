@@ -23,8 +23,5 @@ class AddRecipientsToSplitDiscussion
         $event->newDiscussion->recipientUsers()->sync(
             $event->originalDiscussion->recipientUsers()->allRelatedIds()->all()
         );
-        $event->newDiscussion->recipientGroups()->sync(
-            $event->originalDiscussion->recipientGroups()->allRelatedIds()->all()
-        );
     }
 }

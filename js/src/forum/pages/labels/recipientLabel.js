@@ -1,7 +1,6 @@
 import extract from 'flarum/utils/extract';
 import username from 'flarum/helpers/username';
 import User from 'flarum/models/User';
-import Group from 'flarum/models/Group';
 import LinkButton from 'flarum/components/LinkButton';
 
 export default function recipientLabel(recipient, attrs = {}) {
@@ -18,8 +17,6 @@ export default function recipientLabel(recipient, attrs = {}) {
             attrs.title = recipient.username() || '';
             attrs.href = app.route.user(recipient);
         }
-    } else if (recipient instanceof Group) {
-        label = recipient.namePlural();
     } else {
         attrs.className += ' none';
         label = app.translator.trans('fof-byobu.forum.labels.user_deleted');

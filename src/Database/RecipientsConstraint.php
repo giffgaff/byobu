@@ -37,9 +37,7 @@ trait RecipientsConstraint
         $query
             // Do a subquery where for filtering.
             ->{$method}(function ($query) use ($user, $checkFlags) {
-                // Open access for is_private discussions when the user is
-                // part of the recipients either directly or through a group.
-                $this->forRecipient($query, $user->groups->pluck('id')->all(), $user->id);
+                $this->forRecipient($query, $user->id);
 
                 // Open access for is_private discussions when the user handles
                 // flags and any of the posts inside the discussion is flagged.
@@ -55,22 +53,16 @@ trait RecipientsConstraint
 
     /**
      * @param Query|Eloquent $query
-     * @param array          $groupIds
      * @param int            $userId
      */
-    protected function forRecipient($query, array $groupIds, int $userId)
+    protected function forRecipient($query, int $userId)
     {
-        $query->orWhereIn('discussions.id', function ($query) use ($groupIds, $userId) {
+        $query->orWhereIn('discussions.id', function ($query) use ($userId) {
             $query->select('recipients.discussion_id')
                 ->from('recipients')
                 ->whereNull('recipients.removed_at')
-                ->where(function ($query) use ($groupIds, $userId) {
-                    $query
-                        ->whereIn('recipients.user_id', [$userId])
-                        ->when(count($groupIds) > 0, function ($query) use ($groupIds) {
-                            $query->orWhereIn('recipients.group_id', $groupIds);
-                        })->distinct();
-                })->distinct();
+                ->whereIn('recipients.user_id', [$userId])
+                ->distinct();
         });
     }
 

@@ -78,22 +78,20 @@ class PersistRecipients
         $this->raiseEvent($event->discussion);
 
         $event->discussion->afterSave(function (Discussion $discussion) {
-            foreach (['users', 'groups'] as $type) {
-                $relation = 'recipient'.Str::ucfirst($type);
+            $relation = 'recipient'.Str::ucfirst('users');
 
-                // Add models that weren't stored yet.
-                $discussion->{$relation}()->saveMany(
-                    $this->screener->added($type),
-                    ['removed_at' => null]
+            // Add models that weren't stored yet.
+            $discussion->{$relation}()->saveMany(
+                $this->screener->added('users'),
+                ['removed_at' => null]
+            );
+
+            $this->screener->deleted('users')->each(function ($model) use ($discussion, $relation) {
+                $discussion->{$relation}()->updateExistingPivot(
+                    $model,
+                    ['removed_at' => Carbon::now()]
                 );
-
-                $this->screener->deleted($type)->each(function ($model) use ($discussion, $relation) {
-                    $discussion->{$relation}()->updateExistingPivot(
-                        $model,
-                        ['removed_at' => Carbon::now()]
-                    );
-                });
-            }
+            });
         });
     }
 
@@ -125,9 +123,6 @@ class PersistRecipients
         if ($this->screener->users->isNotEmpty() && $user->cannot('discussion.startPrivateDiscussionWithUsers')) {
             throw new PermissionDeniedException('Not allowed to add users to a private discussion');
         }
-        if ($this->screener->groups->isNotEmpty() && $user->cannot('discussion.startPrivateDiscussionWithGroups')) {
-            throw new PermissionDeniedException('Not allowed to add groups to a private discussion');
-        }
     }
 
     protected function checkPermissionsForExistingDiscussion(User $user, Discussion $discussion)
@@ -140,20 +135,15 @@ class PersistRecipients
         if ($this->screener->users->isNotEmpty() && $user->cannot('discussion.editUserRecipients', $discussion)) {
             throw new PermissionDeniedException('Not allowed to change users in a private discussion');
         }
-        if ($this->screener->groups->isNotEmpty() && $user->cannot('discussion.editGroupRecipients')) {
-            throw new PermissionDeniedException('Not allowed to change groups in a private discussion');
-        }
     }
 
     protected function eventSubmitsRelationships(array $data): bool
     {
         $valid = false;
 
-        foreach (['users', 'groups'] as $type) {
-            $relation = Screener::relationName($type);
+        $relation = Screener::relationName('users');
 
-            $valid = $valid || Arr::has($data, "relationships.$relation");
-        }
+        $valid = $valid || Arr::has($data, "relationships.$relation");
 
         return $valid;
     }

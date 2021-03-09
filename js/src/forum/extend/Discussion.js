@@ -3,7 +3,6 @@ import Model from 'flarum/Model';
 import Badge from 'flarum/components/Badge';
 import Discussion from 'flarum/models/Discussion';
 import User from 'flarum/models/User';
-import Group from 'flarum/models/Group';
 import Button from 'flarum/components/Button';
 import DiscussionListItem from 'flarum/components/DiscussionListItem';
 import DiscussionPage from 'flarum/components/DiscussionPage';
@@ -30,10 +29,6 @@ const add = function (discussion, items, long) {
         recipients = recipients.concat(discussion.recipientUsers());
     }
 
-    if (discussion.recipientGroups().length) {
-        recipients = recipients.concat(discussion.recipientGroups());
-    }
-
     if (recipients && recipients.length) {
         if (long) {
             items.add('recipients', recipientsLabel(recipients), 10);
@@ -45,7 +40,7 @@ const add = function (discussion, items, long) {
 
 function badges(app) {
     extend(Discussion.prototype, 'badges', function (badges) {
-        if (this.recipientUsers().length || this.recipientGroups().length) {
+        if (this.recipientUsers().length) {
             badges.add(
                 'private',
                 Badge.component({
@@ -78,11 +73,9 @@ function hero() {
 function apiInclude() {
     extend(DiscussionPage.prototype, 'params', function (params) {
         params.include.push('recipientUsers');
-        params.include.push('recipientGroups');
     });
     extend(DiscussionListState.prototype, 'requestParams', function (params) {
         params.include.push('recipientUsers');
-        params.include.push('recipientGroups');
     });
 }
 
@@ -111,22 +104,17 @@ function controls() {
                                 }
                             });
 
-                            let recipientGroups = [];
                             let recipientUsers = [];
 
                             recipients.toArray().forEach((recipient) => {
                                 if (recipient instanceof User) {
                                     recipientUsers.push(recipient);
                                 }
-                                if (recipient instanceof Group) {
-                                    recipientGroups.push(recipient);
-                                }
                             });
 
                             discussion.save({
                                 relationships: {
-                                    recipientUsers,
-                                    recipientGroups
+                                    recipientUsers
                                 }
                             }).then(() => app.history.back());
                         }
@@ -140,11 +128,7 @@ function controls() {
 function attributes() {
     Discussion.prototype.recipientUsers = Model.hasMany('recipientUsers');
     Discussion.prototype.oldRecipientUsers = Model.hasMany('oldRecipientUsers');
-    Discussion.prototype.recipientGroups = Model.hasMany('recipientGroups');
-    Discussion.prototype.oldRecipientGroups = Model.hasMany('oldRecipientGroups');
 
     Discussion.prototype.canEditRecipients = Model.attribute('canEditRecipients');
     Discussion.prototype.canEditUserRecipients = Model.attribute('canEditUserRecipients');
-    Discussion.prototype.canEditGroupRecipients = Model.attribute('canEditGroupRecipients');
-    Discussion.prototype.canEditGroupRecipients = Model.attribute('canEditGroupRecipients');
 }

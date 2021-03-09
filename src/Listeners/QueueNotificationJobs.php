@@ -34,8 +34,7 @@ class QueueNotificationJobs
         app('flarum.queue.connection')->push(
             new Jobs\SendNotificationWhenPrivateDiscussionStarted(
                 $event->discussion,
-                $event->screener->users,
-                $event->screener->groups
+                $event->screener->users
             )
         );
     }

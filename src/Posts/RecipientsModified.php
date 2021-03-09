@@ -27,7 +27,7 @@ class RecipientsModified extends AbstractEventPost implements MergeableInterface
     public static $type = 'recipientsModified';
 
     protected $states = ['new', 'old'];
-    protected $types = ['users', 'groups'];
+    protected $types = ['users'];
 
     /**
      * @param Post|null|RecipientsModified $previous
@@ -60,11 +60,9 @@ class RecipientsModified extends AbstractEventPost implements MergeableInterface
         $post->content = [
             'new' => [
                 'users'  => $event->screener->users->pluck('id')->all(),
-                'groups' => $event->screener->groups->pluck('id')->all(),
             ],
             'old' => [
                 'users'  => $event->screener->currentUsers->pluck('id')->all(),
-                'groups' => $event->screener->currentGroups->pluck('id')->all(),
             ],
         ];
         $post->created_at = time();

@@ -1,13 +1,11 @@
 import Search from 'flarum/components/Search';
 import UserSearchSource from './sources/UserSearchSource';
-import GroupSearchSource from './sources/GroupSearchSource';
 import ItemList from 'flarum/utils/ItemList';
 import classList from 'flarum/utils/classList';
 import extractText from 'flarum/utils/extractText';
 import LoadingIndicator from 'flarum/components/LoadingIndicator';
 import recipientLabel from '../pages/labels/recipientLabel';
 import User from 'flarum/models/User';
-import Group from 'flarum/models/Group';
 
 export default class RecipientSearch extends Search {
     oncreate(vnode) {
@@ -129,14 +127,6 @@ export default class RecipientSearch extends Search {
             items.add('users', new UserSearchSource());
         }
 
-        // Add group source based on permissions.
-        if (
-            (!this.attrs.discussion && app.forum.attribute('canStartPrivateDiscussionWithGroups')) ||
-            (this.attrs.discussion && this.attrs.discussion.canEditGroupRecipients())
-        ) {
-            items.add('groups', new GroupSearchSource());
-        }
-
         return items;
     }
 
@@ -164,17 +154,7 @@ export default class RecipientSearch extends Search {
      */
     removeRecipient(recipient, e) {
         e.preventDefault();
-
-        let type;
-
-        if (recipient instanceof User) {
-            type = 'users';
-        }
-        if (recipient instanceof Group) {
-            type = 'groups';
-        }
-
-        this.attrs.selected().remove(type + ':' + recipient.id());
+        this.attrs.selected().remove('users:' + recipient.id());
     }
 
     /**
