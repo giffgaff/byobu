@@ -94,11 +94,6 @@ return [
     (new Extend\ApiSerializer(Serializer\ForumSerializer::class))
         ->mutate(Api\ForumPermissionAttributes::class),
 
-    (new Extend\ApiSerializer(Serializer\CurrentUserSerializer::class))
-        ->attribute('unifiedIndex', function ($serializer, $user) {
-            return  (bool) $user->unified_index_with_byobu;
-        }),
-
     (new Extend\ApiSerializer(Serializer\UserSerializer::class))
         ->hasMany('privateDiscussions', Serializer\DiscussionSerializer::class)
         ->attribute('blocksPd', function ($serializer, $user) {
@@ -143,7 +138,6 @@ return [
 
         // Listeners for old-style events, will be removed in future betas
         $events->listen(GetModelIsPrivate::class, Listeners\GetModelIsPrivate::class);
-        $events->listen(Searching::class, Listeners\UnifiedIndex::class);
         $events->subscribe(Listeners\AddGambits::class);
     },
 
