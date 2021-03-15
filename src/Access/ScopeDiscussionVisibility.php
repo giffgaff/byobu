@@ -11,13 +11,14 @@
 
 namespace FoF\Byobu\Access;
 
+use Flarum\Flags\Flag;
 use Flarum\User\User;
-use FoF\Byobu\Database\RecipientsConstraint;
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
+use FoF\Byobu\Concerns\ExtensionsDiscovery;
 
 class ScopeDiscussionVisibility
 {
-    use RecipientsConstraint;
+    use ExtensionsDiscovery;
 
     /**
      * @param User            $actor
@@ -25,6 +26,35 @@ class ScopeDiscussionVisibility
      */
     public function __invoke(User $actor, EloquentBuilder $query)
     {
-        $this->constraint($query, $actor, true);
+        if ($actor->isGuest()) {
+            return;
+        }
+
+        $query->orWhereIn('discussions.id', function ($query) use ($actor) {
+            $query->select('recipients.discussion_id')
+                ->from('recipients')
+                ->whereNull('recipients.removed_at')
+                ->whereIn('recipients.user_id', [$actor->id]);
+
+            if ($this->canViewFlaggedPrivateDiscussions($actor)) {
+                $query->orWhereIn('recipients.discussion_id', function ($query) {
+                    $query->select('posts.discussion_id')
+                        ->from('posts')
+                        ->join('flags', 'flags.post_id', 'posts.id');
+                });
+            }
+        });
+    }
+
+    private function canViewFlaggedPrivateDiscussions($actor): bool
+    {
+        return $this->flagsInstalled()
+            && $actor->hasPermission('user.viewPrivateDiscussionsWhenFlagged')
+            && $actor->hasPermission('discussion.viewFlags');
+    }
+
+    protected function flagsInstalled(): bool
+    {
+        return $this->extensionIsEnabled('flarum-flags') && class_exists(Flag::class);
     }
 }

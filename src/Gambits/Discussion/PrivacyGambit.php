@@ -11,13 +11,15 @@
 
 namespace FoF\Byobu\Gambits\Discussion;
 
+use Flarum\Flags\Flag;
 use Flarum\Search\AbstractRegexGambit;
 use Flarum\Search\AbstractSearch;
-use FoF\Byobu\Database\RecipientsConstraint;
+use FoF\Byobu\Concerns\ExtensionsDiscovery;
 
 class PrivacyGambit extends AbstractRegexGambit
 {
-    use RecipientsConstraint;
+    use ExtensionsDiscovery;
+
     /**
      * {@inheritdoc}
      */
@@ -41,8 +43,31 @@ class PrivacyGambit extends AbstractRegexGambit
             return;
         }
 
-        $search->getQuery()->where(function ($query) use ($actor) {
-            $this->constraint($query, $actor, false);
+        $search->getQuery()->whereIn('discussions.id', function ($query) use ($actor) {
+            $query->select('recipients.discussion_id')
+                ->from('recipients')
+                ->whereNull('recipients.removed_at')
+                ->whereIn('recipients.user_id', [$actor->id]);
+
+            if ($this->canViewFlaggedPrivateDiscussions($actor)) {
+                $query->orWhereIn('recipients.discussion_id', function ($query) {
+                    $query->select('posts.discussion_id')
+                        ->from('posts')
+                        ->join('flags', 'flags.post_id', 'posts.id');
+                });
+            }
         });
+    }
+
+    private function canViewFlaggedPrivateDiscussions($actor): bool
+    {
+        return $this->flagsInstalled()
+                && $actor->hasPermission('user.viewPrivateDiscussionsWhenFlagged')
+                && $actor->hasPermission('discussion.viewFlags');
+    }
+
+    protected function flagsInstalled(): bool
+    {
+        return $this->extensionIsEnabled('flarum-flags') && class_exists(Flag::class);
     }
 }
