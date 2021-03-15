@@ -35,7 +35,6 @@ class AddGambits
     public function addDiscussionGambit(ConfigureDiscussionGambits $event)
     {
         $event->gambits->add(PrivacyGambit::class);
-//        $event->gambits->add(ByobuGambit::class);
     }
 
     public function addUserGambits(ConfigureUserGambits $event)

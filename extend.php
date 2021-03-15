@@ -106,9 +106,6 @@ return [
     (new Extend\View())
         ->namespace('fof-byobu', __DIR__.'/resources/views'),
 
-    (new Extend\Policy())
-        ->modelPolicy(Discussion::class, Access\DiscussionPolicy::class),
-
     (new Extend\ModelVisibility(Discussion::class))
         ->scope(Access\ScopeDiscussionVisibility::class, 'viewPrivate'),
 
