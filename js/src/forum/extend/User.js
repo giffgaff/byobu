@@ -11,7 +11,6 @@ import LinkButton from 'flarum/components/LinkButton';
 export default (app) => {
     attributes();
     message(app);
-    sharedMessageHistory(app);
 }
 
 function message(app) {
@@ -53,26 +52,6 @@ function message(app) {
         }
 
         return items;
-    });
-}
-
-function sharedMessageHistory(app) {
-    extend(UserPage.prototype, 'navItems', function (items) {
-        const href = app.route('byobuUserPrivate', { username: this.user.username() });
-
-        // Hide links from guests if they are not already on the page
-        if (!app.session.user && m.route.get() !== href) return;
-        // Hide link for your own page.
-        if (app.session.user && app.session.user.username() === this.user.username()) return;
-
-        items.add(
-            'byobu',
-            LinkButton.component({
-                href,
-                icon: app.forum.data.attributes['byobu.icon-badge'],
-            }, app.translator.trans('fof-byobu.forum.user.byobu_link')),
-            85
-        );
     });
 }
 
