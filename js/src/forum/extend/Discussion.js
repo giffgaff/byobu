@@ -23,6 +23,8 @@ export default (app) => {
 }
 
 const add = function (discussion, items, long) {
+    if (typeof discussion.recipientUsers !== 'function') return;
+
     let recipients = [];
 
     if (discussion.recipientUsers().length) {
@@ -40,6 +42,8 @@ const add = function (discussion, items, long) {
 
 function badges(app) {
     extend(Discussion.prototype, 'badges', function (badges) {
+        if (typeof this.recipientUsers !== 'function') return;
+
         if (this.recipientUsers().length) {
             badges.add(
                 'private',
@@ -71,16 +75,18 @@ function hero() {
 }
 
 function apiInclude() {
-    extend(DiscussionPage.prototype, 'params', function (params) {
+    /*extend(DiscussionPage.prototype, 'params', function (params) {
         params.include.push('recipientUsers');
     });
     extend(DiscussionListState.prototype, 'requestParams', function (params) {
         params.include.push('recipientUsers');
-    });
+    });*/
 }
 
 function controls() {
     extend(DiscussionControls, 'moderationControls', function (items, discussion) {
+        if (typeof discussion.recipientUsers !== 'function') return;
+
         if (discussion.canEditRecipients()) {
             items.add(
                 'recipients',
@@ -126,9 +132,9 @@ function controls() {
 }
 
 function attributes() {
-    Discussion.prototype.recipientUsers = Model.hasMany('recipientUsers');
+    /*Discussion.prototype.recipientUsers = Model.hasMany('recipientUsers');
     Discussion.prototype.oldRecipientUsers = Model.hasMany('oldRecipientUsers');
 
     Discussion.prototype.canEditRecipients = Model.attribute('canEditRecipients');
-    Discussion.prototype.canEditUserRecipients = Model.attribute('canEditUserRecipients');
+    Discussion.prototype.canEditUserRecipients = Model.attribute('canEditUserRecipients');*/
 }

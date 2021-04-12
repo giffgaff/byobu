@@ -11,16 +11,22 @@
 
 namespace FoF\Byobu;
 
-use Flarum\Api\Controller;
-use Flarum\Api\Serializer;
+use Flarum\Api\Serializer\BasicDiscussionSerializer;
+use Flarum\Api\Serializer\BasicUserSerializer;
+use Flarum\Api\Serializer\DiscussionSerializer;
+use Flarum\Api\Serializer\ForumSerializer;
+use Flarum\Api\Serializer\UserSerializer;
 use Flarum\Discussion\Discussion;
 use Flarum\Discussion\Event\Saving as DiscussionSaving;
-use Flarum\Discussion\Event\Searching;
-use Flarum\Event\GetModelIsPrivate;
 use Flarum\Extend;
 use Flarum\Post\Event\Saving as PostSaving;
 use Flarum\User\Event\Saving as UserSaving;
 use Flarum\User\User;
+use FoF\Byobu\Api\Controller\ListPrivateDiscussionPostsController;
+use FoF\Byobu\Api\Controller\ListPrivateDiscussionsController;
+use FoF\Byobu\Api\Controller\ShowPrivateDiscussionController;
+use FoF\Byobu\Content\PrivateDiscussionPage;
+use FoF\Byobu\Content\PrivateDiscussionsPage;
 use FoF\Components\Extend\AddFofComponents;
 use FoF\Split\Events\DiscussionWasSplit;
 use Illuminate\Contracts\Events\Dispatcher;
@@ -33,9 +39,15 @@ return [
         ->js(__DIR__.'/js/dist/admin.js'),
 
     (new Extend\Frontend('forum'))
-        ->route('/private', 'byobuPrivate', Content\PrivateDiscussionsPage::class)
+        ->route('/private/{id}', 'byobuPrivateDiscussion', PrivateDiscussionPage::class)
+        ->route('/private', 'byobuPrivateDiscussionList', PrivateDiscussionsPage::class)
         ->css(__DIR__.'/resources/less/forum/extension.less')
         ->js(__DIR__.'/js/dist/forum.js'),
+
+    (new Extend\Routes('api'))
+        ->get('/private-discussions', 'fof.byobu.private-discussions', ListPrivateDiscussionsController::class)
+        ->get('/private-discussions/{id}', 'fof.byobu.private-discussions.get', ShowPrivateDiscussionController::class)
+        ->get('/private-discussion-posts/{id}', 'fof.byobu.private-discussions.posts.get', ListPrivateDiscussionPostsController::class),
 
     new Extend\Locales(__DIR__.'/resources/locale'),
 
@@ -59,24 +71,24 @@ return [
         }),
 
 
-    (new Extend\ApiController(Controller\ListDiscussionsController::class))
+    (new Extend\ApiController(ListPrivateDiscussionsController::class))
         ->addInclude(['recipientUsers', 'oldRecipientUsers']),
 
-    (new Extend\ApiController(Controller\ShowDiscussionController::class))
+    (new Extend\ApiController(ShowPrivateDiscussionController::class))
         ->addInclude(['recipientUsers', 'oldRecipientUsers']),
 
-    (new Extend\ApiSerializer(Serializer\BasicDiscussionSerializer::class))
-        ->hasMany('recipientUsers', Serializer\BasicUserSerializer::class)
-        ->hasMany('oldRecipientUsers', Serializer\BasicUserSerializer::class),
+    (new Extend\ApiSerializer(BasicDiscussionSerializer::class))
+        ->hasMany('recipientUsers', BasicUserSerializer::class)
+        ->hasMany('oldRecipientUsers', BasicUserSerializer::class),
 
-    (new Extend\ApiSerializer(Serializer\DiscussionSerializer::class))
+    (new Extend\ApiSerializer(DiscussionSerializer::class))
         ->mutate(Api\DiscussionPermissionAttributes::class),
 
-    (new Extend\ApiSerializer(Serializer\ForumSerializer::class))
+    (new Extend\ApiSerializer(ForumSerializer::class))
         ->mutate(Api\ForumPermissionAttributes::class),
 
-    (new Extend\ApiSerializer(Serializer\UserSerializer::class))
-        ->hasMany('privateDiscussions', Serializer\DiscussionSerializer::class)
+    (new Extend\ApiSerializer(UserSerializer::class))
+        ->hasMany('privateDiscussions', DiscussionSerializer::class)
         ->attribute('blocksPd', function ($serializer, $user) {
             return (bool) $user->blocks_byobu_pd;
         })
@@ -87,18 +99,15 @@ return [
     (new Extend\View())
         ->namespace('fof-byobu', __DIR__.'/resources/views'),
 
-    (new Extend\ModelVisibility(Discussion::class))
-        ->scope(Access\ScopeDiscussionVisibility::class, 'viewPrivate'),
-
     (new Extend\Post())
         ->type(Posts\RecipientLeft::class)
         ->type(Posts\RecipientsModified::class),
 
     (new Extend\Notification())
-        ->type(Notifications\DiscussionCreatedBlueprint::class, Serializer\DiscussionSerializer::class, ['alert', 'email'])
-        ->type(Notifications\DiscussionRepliedBlueprint::class, Serializer\DiscussionSerializer::class, ['alert', 'email'])
-        ->type(Notifications\DiscussionRecipientRemovedBlueprint::class, Serializer\DiscussionSerializer::class, ['alert', 'email'])
-        ->type(Notifications\DiscussionAddedBlueprint::class, Serializer\DiscussionSerializer::class, ['alert', 'email']),
+        ->type(Notifications\DiscussionCreatedBlueprint::class, DiscussionSerializer::class, ['alert', 'email'])
+        ->type(Notifications\DiscussionRepliedBlueprint::class, DiscussionSerializer::class, ['alert', 'email'])
+        ->type(Notifications\DiscussionRecipientRemovedBlueprint::class, DiscussionSerializer::class, ['alert', 'email'])
+        ->type(Notifications\DiscussionAddedBlueprint::class, DiscussionSerializer::class, ['alert', 'email']),
 
     (new Extend\Event())
         ->listen(DiscussionSaving::class, Listeners\PersistRecipients::class)
@@ -113,9 +122,6 @@ return [
     function (Dispatcher $events) {
         $events->subscribe(Listeners\CreatePostWhenRecipientsChanged::class);
         $events->subscribe(Listeners\QueueNotificationJobs::class);
-
-        // Listeners for old-style events, will be removed in future betas
-        $events->listen(GetModelIsPrivate::class, Listeners\GetModelIsPrivate::class);
         $events->subscribe(Listeners\AddGambits::class);
     },
 

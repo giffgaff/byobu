@@ -1,45 +1,70 @@
-import { extend } from 'flarum/extend';
-import LinkButton from 'flarum/components/LinkButton';
-import IndexPage from 'flarum/components/IndexPage';
-import DiscussionListState from 'flarum/states/DiscussionListState';
-import PrivateComposing from "./PrivateComposing";
+import ItemList from 'flarum/utils/ItemList';
+import listItems from 'flarum/helpers/listItems';
+import PrivateDiscussionList from './discussions/PrivateDiscussionList';
+import Button from 'flarum/components/Button';
+import PrivateDiscussionListState from "../states/PrivateDiscussionListState";
+import IndexPage from "flarum/components/IndexPage";
 
-export default (app) => {
-    extend(IndexPage.prototype, 'navItems', (items) => {
-        const user = app.session.user;
 
-        if (user) {
-            items.add(
-                'privateDiscussions',
-                LinkButton.component({
-                    icon: app.forum.data.attributes['byobu.icon-badge'],
-                    href: app.route('byobuPrivate'),
-                }, app.translator.trans('fof-byobu.forum.nav.nav_item')),
-                75
-            );
+export default class PrivateDiscussionsPage extends IndexPage {
+    privateDiscussions = new PrivateDiscussionListState({}, app);
+
+    oninit(vnode) {
+        super.oninit(vnode);
+
+        if (app.previous.matches(PrivateDiscussionsPage)) {
+            this.privateDiscussions.clear();
         }
-    });
 
-    extend(IndexPage.prototype, 'setTitle', function () {
-        if (app.current.get('routeName') === 'byobuPrivate') {
-            app.setTitle(app.translator.trans('fof-byobu.forum.user.dropdown_label'));
-        }
-    });
+        this.privateDiscussions.refreshParams(app.search.params());
+    }
 
-    extend(DiscussionListState.prototype, 'requestParams', function(params) {
-        if (app.current.get('routeName') === 'byobuPrivate') {
-            params.filter.q = (params.filter.q || '') + ' is:private';
-        }
-    });
+    view() {
+        return (
+            <div className="IndexPage">
+                {this.hero()}
+                <div className="container">
+                    <div className="sideNavContainer">
+                        <nav className="IndexPage-nav sideNav">
+                            <ul>{listItems(this.sidebarItems().toArray())}</ul>
+                        </nav>
+                        <div className="IndexPage-results sideNavOffset">
+                            <div className="IndexPage-toolbar">
+                                <ul className="IndexPage-toolbar-view">{listItems(this.viewItems().toArray())}</ul>
+                                <ul className="IndexPage-toolbar-action">{listItems(this.actionItems().toArray())}</ul>
+                            </div>
+                            <PrivateDiscussionList state={this.privateDiscussions} />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
-    extend(IndexPage.prototype, 'sidebarItems', function (items) {
-        if (app.current.get('routeName') === 'byobuPrivate') {
-            let compose = new PrivateComposing;
+    viewItems() {
+        const items = new ItemList();
+        items.remove('sort');
+        return items;
+    }
 
-            items.replace(
-                'newDiscussion',
-                compose.component()
-            );
-        }
-    });
+    actionItems() {
+        const items = IndexPage.prototype.actionItems();
+
+        items.add(
+            'refresh',
+            Button.component({
+                title: app.translator.trans('core.forum.index.refresh_tooltip'),
+                icon: 'fas fa-sync',
+                className: 'Button Button--icon',
+                onclick: () => {
+                    this.privateDiscussions.refresh();
+                    if (app.session.user) {
+                        app.store.find('users', app.session.user.id());
+                        m.redraw();
+                    }
+                },
+            })
+        );
+        return items;
+    }
 }
