@@ -14,6 +14,6 @@ export default class PrivateDiscussionListState extends DiscussionListState
             return Promise.resolve(preloadedDiscussions);
         }
 
-        return this.app.store.find('private-discussions');
+        return this.app.store.find('fof-byobu-private-discussions');
     }
 }

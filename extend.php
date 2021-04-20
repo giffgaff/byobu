@@ -45,9 +45,9 @@ return [
         ->js(__DIR__.'/js/dist/forum.js'),
 
     (new Extend\Routes('api'))
-        ->get('/private-discussions', 'fof.byobu.private-discussions', ListPrivateDiscussionsController::class)
-        ->get('/private-discussions/{id}', 'fof.byobu.private-discussions.get', ShowPrivateDiscussionController::class)
-        ->get('/private-discussion-posts/{id}', 'fof.byobu.private-discussions.posts.get', ListPrivateDiscussionPostsController::class),
+        ->get('/fof-byobu-private-discussions', 'fof.byobu.private-discussions', ListPrivateDiscussionsController::class)
+        ->get('/fof-byobu-private-discussions/{id}', 'fof.byobu.private-discussions.get', ShowPrivateDiscussionController::class)
+        ->get('/fof-byobu-private-posts/{discussionId}', 'fof.byobu.private-posts.get', ListPrivateDiscussionPostsController::class),
 
     new Extend\Locales(__DIR__.'/resources/locale'),
 

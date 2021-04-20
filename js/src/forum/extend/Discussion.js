@@ -14,6 +14,8 @@ import ItemList from 'flarum/utils/ItemList';
 import AddRecipientModal from './../modals/AddRecipientModal';
 
 export default (app) => {
+
+
     attributes();
     badges(app);
     index();

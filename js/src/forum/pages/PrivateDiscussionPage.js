@@ -9,8 +9,11 @@ import SplitDropdown from 'flarum/components/SplitDropdown';
 import listItems from 'flarum/helpers/listItems';
 import DiscussionControls from 'flarum/utils/DiscussionControls';
 import PostStreamState from 'flarum/states/PostStreamState';
+import PrivateDiscussionListState from "../states/PrivateDiscussionListState";
 
 export default class PrivateDiscussionPage extends Page {
+    privateDiscussions = new PrivateDiscussionListState({}, app);
+
     oninit(vnode) {
         super.oninit(vnode);
 
@@ -67,11 +70,16 @@ export default class PrivateDiscussionPage extends Page {
 
         return (
             <div className="DiscussionPage">
-                <DiscussionListPane state={app.discussions} />
                 <div className="DiscussionPage-discussion">
                     {discussion
                         ? [
-                            DiscussionHero.component({ discussion }),
+                            (<header className="Hero DiscussionHero">
+                                <div className="container">
+                                    <ul className="DiscussionHero-items">
+                                        <li><h2 className="DiscussionHero-title">{discussion.title()}</h2></li>
+                                    </ul>
+                                </div>
+                            </header>),
                             <div className="container">
                                 <nav className="DiscussionPage-nav">
                                     <ul>{listItems(this.sidebarItems().toArray())}</ul>
@@ -80,7 +88,7 @@ export default class PrivateDiscussionPage extends Page {
                                     {PostStream.component({
                                         discussion,
                                         stream: this.stream,
-                                        onPositionChange: this.positionChanged.bind(this),
+                                        onPositionChange: () => {},
                                     })}
                                 </div>
                             </div>,
@@ -95,19 +103,10 @@ export default class PrivateDiscussionPage extends Page {
      * Load the discussion from the API or use the preloaded one.
      */
     load() {
-        const preloadedDiscussion = app.preloadedApiDocument();
-        if (preloadedDiscussion) {
-            // We must wrap this in a setTimeout because if we are mounting this
-            // component for the first time on page load, then any calls to m.redraw
-            // will be ineffective and thus any configs (scroll code) will be run
-            // before stuff is drawn to the page.
-            setTimeout(this.show.bind(this, preloadedDiscussion), 0);
-        } else {
-            const params = this.requestParams();
-
-            app.store.find('discussions', m.route.param('id'), params).then(this.show.bind(this));
-        }
-
+        const params = this.requestParams();
+        app.store.find('fof-byobu-private-posts', m.route.param('id'), params).then(() => {
+            app.store.find('fof-byobu-private-discussions', m.route.param('id'), params).then(this.show.bind(this));
+        });
         m.redraw();
     }
 
@@ -153,7 +152,7 @@ export default class PrivateDiscussionPage extends Page {
                     record.relationships.discussion &&
                     record.relationships.discussion.data.id === discussionId
             )
-            .map((record) => app.store.getById('posts', record.id))
+            .map((record) => app.store.getById('fof-byobu-private-posts', record.id))
             .sort((a, b) => a.createdAt() - b.createdAt())
             .slice(0, 20);
         }
@@ -164,9 +163,6 @@ export default class PrivateDiscussionPage extends Page {
         this.stream = new PostStreamState(discussion, includedPosts);
         this.stream.goToNumber(m.route.param('near') || (includedPosts[0] && includedPosts[0].number()), true).then(() => {
             this.discussion = discussion;
-
-            app.current.set('discussion', discussion);
-            app.current.set('stream', this.stream);
         });
     }
 
@@ -200,30 +196,5 @@ export default class PrivateDiscussionPage extends Page {
         );
 
         return items;
-    }
-
-    /**
-     * When the posts that are visible in the post stream change (i.e. the user
-     * scrolls up or down), then we update the URL and mark the posts as read.
-     *
-     * @param {Integer} startNumber
-     * @param {Integer} endNumber
-     */
-    positionChanged(startNumber, endNumber) {
-        const discussion = this.discussion;
-
-        // Construct a URL to this discussion with the updated position, then
-        // replace it into the window's history and our own history stack.
-        const url = app.route.discussion(discussion, (this.near = startNumber));
-
-        window.history.replaceState(null, document.title, url);
-        app.history.push('discussion', discussion.title());
-
-        // If the user hasn't read past here before, then we'll update their read
-        // state and redraw.
-        if (app.session.user && endNumber > (discussion.lastReadPostNumber() || 0)) {
-            discussion.save({ lastReadPostNumber: endNumber });
-            m.redraw();
-        }
     }
 }
