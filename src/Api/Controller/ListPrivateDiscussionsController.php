@@ -10,6 +10,9 @@ use FoF\Byobu\Api\Serializer\PrivateDiscussionSerializer;
 use Psr\Http\Message\ServerRequestInterface;
 use Tobscure\JsonApi\Document;
 use FoF\Byobu\Concerns\ExtensionsDiscovery;
+use Flarum\Search\SearchCriteria;
+use Illuminate\Support\Arr;
+
 
 class ListPrivateDiscussionsController extends ListDiscussionsController
 {
@@ -33,6 +36,17 @@ class ListPrivateDiscussionsController extends ListDiscussionsController
         $actor = $request->getAttribute('actor');
         $actor->assertCan('discussion.startPrivateDiscussionWithUsers');
 
+        $query = Arr::get($this->extractFilter($request), 'q');
+        $sort = $this->extractSort($request);
+        $criteria = new SearchCriteria($actor, $query, $sort);
+
+        $limit = $this->extractLimit($request);
+        $offset = $this->extractOffset($request);
+
+        $results = $this->searcher->search($criteria, $limit, $offset);
+
+
+        
         $query = $this->discussions
                       ->query()
                       ->distinct()
@@ -49,6 +63,14 @@ class ListPrivateDiscussionsController extends ListDiscussionsController
                     ->join('flags', 'flags.post_id', 'posts.id');
             });
         }
+
+        $document->addPaginationLinks(
+          $this->url->to('api')->route('discussions.index'),
+          $request->getQueryParams(),
+          $offset,
+          $limit,
+          $results->areMoreResults() ? null : 0
+      );
 
         return $query->get();
     }
