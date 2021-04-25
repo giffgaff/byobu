@@ -15,10 +15,8 @@ use Flarum\Api\Controller;
 use Flarum\Api\Serializer;
 use Flarum\Discussion\Discussion;
 use Flarum\Discussion\Event\Saving as DiscussionSaving;
-use Flarum\Discussion\Event\Searching;
 use Flarum\Event\GetModelIsPrivate;
 use Flarum\Extend;
-use Flarum\Group\Group;
 use Flarum\Post\Event\Saving as PostSaving;
 use Flarum\User\Event\Saving as UserSaving;
 use Flarum\User\User;
@@ -50,16 +48,6 @@ return [
             return $discussion->belongsToMany(User::class, 'recipients')
                 ->withTimestamps()
                 ->wherePivot('removed_at', '!=', null);
-        })
-        ->relationship('recipientGroups', function ($discussion) {
-            return $discussion->belongsToMany(Group::class, 'recipients')
-                ->withTimestamps()
-                ->wherePivot('removed_at', null);
-        })
-        ->relationship('oldRecipientGroups', function ($discussion) {
-            return $discussion->belongsToMany(Group::class, 'recipients')
-                ->withTimestamps()
-                ->wherePivot('removed_at', '!=', null);
         }),
 
     (new Extend\Model(User::class))
@@ -69,24 +57,15 @@ return [
                 ->wherePivot('removed_at', null);
         }),
 
-    (new Extend\Model(Group::class))
-        ->relationship('privateDiscussions', function ($group) {
-            return $group->belongsToMany(Discussion::class, 'recipients')
-                ->withTimestamps()
-                ->wherePivot('removed_at', null);
-        }),
-
     (new Extend\ApiController(Controller\ListDiscussionsController::class))
-        ->addInclude(['recipientUsers', 'oldRecipientUsers', 'recipientGroups', 'oldRecipientGroups']),
+        ->addInclude(['recipientUsers', 'oldRecipientUsers']),
 
     (new Extend\ApiController(Controller\ShowDiscussionController::class))
-        ->addInclude(['recipientUsers', 'oldRecipientUsers', 'recipientGroups', 'oldRecipientGroups']),
+        ->addInclude(['recipientUsers', 'oldRecipientUsers']),
 
     (new Extend\ApiSerializer(Serializer\BasicDiscussionSerializer::class))
         ->hasMany('recipientUsers', Serializer\BasicUserSerializer::class)
-        ->hasMany('oldRecipientUsers', Serializer\BasicUserSerializer::class)
-        ->hasMany('recipientGroups', Serializer\GroupSerializer::class)
-        ->hasMany('oldRecipientGroups', Serializer\GroupSerializer::class),
+        ->hasMany('oldRecipientUsers', Serializer\BasicUserSerializer::class),
 
     (new Extend\ApiSerializer(Serializer\DiscussionSerializer::class))
         ->mutate(Api\DiscussionPermissionAttributes::class),
@@ -105,12 +84,6 @@ return [
 
     (new Extend\View())
         ->namespace('fof-byobu', __DIR__.'/resources/views'),
-
-    (new Extend\Policy())
-        ->modelPolicy(Discussion::class, Access\DiscussionPolicy::class),
-
-    (new Extend\ModelVisibility(Discussion::class))
-        ->scope(Access\ScopeDiscussionVisibility::class, 'viewPrivate'),
 
     (new Extend\Post())
         ->type(Posts\RecipientLeft::class)

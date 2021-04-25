@@ -57,11 +57,11 @@ trait RecipientsConstraint
      */
     protected function forRecipient($query, int $userId)
     {
-        $query->orWhereIn('discussions.id', function ($query) use ($userId) {
+        $query->whereIn('discussions.id', function ($query) use ($userId) {
             $query->select('recipients.discussion_id')
                 ->from('recipients')
                 ->whereNull('recipients.removed_at')
-                ->whereIn('recipients.user_id', [$userId])
+                ->where('recipients.user_id', $userId)
                 ->distinct();
         });
     }
