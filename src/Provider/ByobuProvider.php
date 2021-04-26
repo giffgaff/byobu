@@ -52,37 +52,6 @@ class ByobuProvider extends AbstractServiceProvider
         $this->app->bind( DiscussionSearcher::class, function ($app) {
             return $app->make(ByobuDiscussionSearcher::class);
         });
-
-        $this->app->bind(ShowDiscussionController::class, function($app) {
-            return $app->make(ShowByobuDiscussionController::class);
-        });
-
-        $this->app->bind(CreateDiscussionController::class, function($app) {
-            return $app->make(CreateByobuDiscussionController::class);
-        });
-
-        $this->app->bind(UpdateDiscussionController::class, function($app) {
-            return $app->make(UpdateByobuDiscussionController::class);
-        });
-
-        $this->app->bind(DeleteDiscussionController::class, function($app) {
-            return $app->make(DeleteByobuDiscussionController::class);
-        });
-    }
-
-    private function registerPostOverrides()
-    {
-        $this->app->bind(CreatePostController::class, function($app) {
-            return $app->make(CreateByobuPostController::class);
-        });
-
-        $this->app->bind(UpdatePostController::class, function($app) {
-            return $app->make(UpdateByobuPostController::class);
-        });
-
-        $this->app->bind(DeletePostController::class, function($app) {
-            return $app->make(DeleteByobuPostController::class);
-        });
     }
 
     private function fixGambits()
@@ -110,7 +79,6 @@ class ByobuProvider extends AbstractServiceProvider
     {
         $this->fixGambits();
         $this->registerDiscussionOverrides();
-        $this->registerPostOverrides();
 
         $this->app->bind('byobu.screener', Screener::class);
     }

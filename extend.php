@@ -20,6 +20,7 @@ use Flarum\Extend;
 use Flarum\Post\Event\Saving as PostSaving;
 use Flarum\User\Event\Saving as UserSaving;
 use Flarum\User\User;
+use FoF\Byobu\Access\ScopeDiscussionVisibility;
 use FoF\Components\Extend\AddFofComponents;
 use FoF\Split\Events\DiscussionWasSplit;
 use Illuminate\Contracts\Events\Dispatcher;
@@ -61,7 +62,45 @@ return [
         ->addInclude(['recipientUsers', 'oldRecipientUsers']),
 
     (new Extend\ApiController(Controller\ShowDiscussionController::class))
-        ->addInclude(['recipientUsers', 'oldRecipientUsers']),
+        ->addInclude(['recipientUsers', 'oldRecipientUsers'])
+        ->prepareDataQuery(function($controller) {
+            Discussion::registerVisibilityScoper(new ScopeDiscussionVisibility(), 'view');
+        }),
+
+    (new Extend\ApiController(Controller\CreateDiscussionController::class))
+        ->prepareDataQuery(function($controller) {
+            Discussion::registerVisibilityScoper(new ScopeDiscussionVisibility(), 'view');
+        }),
+
+    (new Extend\ApiController(Controller\UpdateDiscussionController::class))
+        ->prepareDataQuery(function($controller) {
+            Discussion::registerVisibilityScoper(new ScopeDiscussionVisibility(), 'view');
+        }),
+
+    (new Extend\ApiController(Controller\DeleteDiscussionController::class))
+        ->prepareDataQuery(function($controller) {
+            Discussion::registerVisibilityScoper(new ScopeDiscussionVisibility(), 'view');
+        }),
+
+    (new Extend\ApiController(Controller\CreatePostController::class))
+        ->prepareDataQuery(function($controller) {
+            Discussion::registerVisibilityScoper(new ScopeDiscussionVisibility(), 'view');
+        }),
+
+    (new Extend\ApiController(Controller\UpdatePostController::class))
+        ->prepareDataQuery(function($controller) {
+            Discussion::registerVisibilityScoper(new ScopeDiscussionVisibility(), 'view');
+        }),
+
+    (new Extend\ApiController(Controller\DeletePostController::class))
+        ->prepareDataQuery(function($controller) {
+            Discussion::registerVisibilityScoper(new ScopeDiscussionVisibility(), 'view');
+        }),
+
+    (new Extend\ApiController(Controller\ListNotificationsController::class))
+        ->prepareDataQuery(function($controller) {
+            Discussion::registerVisibilityScoper(new ScopeDiscussionVisibility(), 'view');
+        }),
 
     (new Extend\ApiSerializer(Serializer\BasicDiscussionSerializer::class))
         ->hasMany('recipientUsers', Serializer\BasicUserSerializer::class)
