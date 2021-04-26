@@ -19,14 +19,29 @@ class ByobuDiscussionSearcher extends DiscussionSearcher
     private function getPrivateDiscussions(SearchCriteria $criteria, $limit = null, $offset = 0)
     {
         $actor = $criteria->actor;
-        $query = $this->discussions->query()->select('discussions.*');
 
-        $this->constraint($query, $actor, false);
-        $query->orderBy('created_at', 'desc');
+        $query = $this->discussions
+            ->query()
+            ->distinct()
+            ->select('discussions.*')
+            ->join('recipients', 'recipients.discussion_id', '=', 'discussions.id')
+            ->whereNull('recipients.removed_at')
+            ->where('recipients.user_id', $actor->id);
+
+        if ($this->flagsInstalled()
+            && $actor->hasPermission('user.viewPrivateDiscussionsWhenFlagged')
+            && $actor->hasPermission('discussion.viewFlags')) {
+            $query->orWhereIn('recipients.discussion_id', function ($query) {
+                $query->select('posts.discussion_id')
+                    ->from('posts')
+                    ->join('flags', 'flags.post_id', 'posts.id');
+            });
+        }
 
         $search = new DiscussionSearch($query->getQuery(), $actor);
         $this->applyOffset($search, $offset);
         $this->applyLimit($search, $limit + 1);
+        $this->applySort($search, $criteria->sort);
 
         $discussions = $query->get();
 
