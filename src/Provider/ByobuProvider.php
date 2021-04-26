@@ -20,6 +20,12 @@ use Flarum\Api\Controller\UpdateDiscussionController;
 use Flarum\Api\Controller\UpdatePostController;
 use Flarum\Discussion\DiscussionRepository;
 use Flarum\Discussion\Search\DiscussionSearcher;
+use Flarum\Discussion\Search\Gambit\AuthorGambit;
+use Flarum\Discussion\Search\Gambit\CreatedGambit;
+use Flarum\Discussion\Search\Gambit\FulltextGambit as DiscussionFulltextGambit;
+use Flarum\Discussion\Search\Gambit\HiddenGambit;
+use Flarum\Discussion\Search\Gambit\UnreadGambit;
+use Flarum\Event\ConfigureDiscussionGambits;
 use Flarum\Foundation\AbstractServiceProvider;
 use Flarum\Http\SlugManager;
 use Flarum\Post\Floodgate;
@@ -34,6 +40,7 @@ use FoF\Byobu\Api\Controller\UpdateByobuDiscussionController;
 use FoF\Byobu\Api\Controller\UpdateByobuPostController;
 use FoF\Byobu\Discussion\Screener;
 use FoF\Byobu\Discussion\Search\ByobuDiscussionSearcher;
+use Illuminate\Contracts\Container\Container;
 use Illuminate\Contracts\Events\Dispatcher as EventDispatcher;
 use Illuminate\Contracts\Bus\Dispatcher;
 
@@ -43,53 +50,65 @@ class ByobuProvider extends AbstractServiceProvider
     private function registerDiscussionOverrides()
     {
         $this->app->bind( DiscussionSearcher::class, function ($app) {
-            return new ByobuDiscussionSearcher(
-                $app->make(GambitManager::class),
-                $app->make(DiscussionRepository::class),
-                $app->make(EventDispatcher::class));
+            return $app->make(ByobuDiscussionSearcher::class);
         });
 
         $this->app->bind(ShowDiscussionController::class, function($app) {
-            return new ShowByobuDiscussionController(
-                $app->make(DiscussionRepository::class),
-                $app->make(PostRepository::class),
-                $app->make(SlugManager::class));
+            return $app->make(ShowByobuDiscussionController::class);
         });
 
         $this->app->bind(CreateDiscussionController::class, function($app) {
-            return new CreateByobuDiscussionController(
-                $app->make(Dispatcher::class),
-                $app->make(Floodgate::class));
+            return $app->make(CreateByobuDiscussionController::class);
         });
 
         $this->app->bind(UpdateDiscussionController::class, function($app) {
-            return new UpdateByobuDiscussionController($app->make(Dispatcher::class));
+            return $app->make(UpdateByobuDiscussionController::class);
         });
 
         $this->app->bind(DeleteDiscussionController::class, function($app) {
-            return new DeleteByobuDiscussionController($app->make(Dispatcher::class));
+            return $app->make(DeleteByobuDiscussionController::class);
         });
     }
 
     private function registerPostOverrides()
     {
         $this->app->bind(CreatePostController::class, function($app) {
-            return new CreateByobuPostController(
-                $app->make(Dispatcher::class),
-                $app->make(Floodgate::class));
+            return $app->make(CreateByobuPostController::class);
         });
 
         $this->app->bind(UpdatePostController::class, function($app) {
-            return new UpdateByobuPostController($app->make(Dispatcher::class));
+            return $app->make(UpdateByobuPostController::class);
         });
 
         $this->app->bind(DeletePostController::class, function($app) {
-            return new DeleteByobuPostController($app->make(Dispatcher::class));
+            return $app->make(DeleteByobuPostController::class);
         });
+    }
+
+    private function fixGambits()
+    {
+        $this->app->when(ByobuDiscussionSearcher::class)
+            ->needs(GambitManager::class)
+            ->give(function (Container $app) {
+                $gambits = new GambitManager($app);
+
+                $gambits->setFulltextGambit(DiscussionFulltextGambit::class);
+                $gambits->add(AuthorGambit::class);
+                $gambits->add(CreatedGambit::class);
+                $gambits->add(HiddenGambit::class);
+                $gambits->add(UnreadGambit::class);
+
+                $app->make('events')->dispatch(
+                    new ConfigureDiscussionGambits($gambits)
+                );
+
+                return $gambits;
+            });
     }
 
     public function register()
     {
+        $this->fixGambits();
         $this->registerDiscussionOverrides();
         $this->registerPostOverrides();
 
