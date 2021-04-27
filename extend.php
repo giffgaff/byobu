@@ -17,6 +17,9 @@ use Flarum\Discussion\Discussion;
 use Flarum\Discussion\Event\Saving as DiscussionSaving;
 use Flarum\Event\GetModelIsPrivate;
 use Flarum\Extend;
+use Flarum\Flags\Api\Controller\CreateFlagController;
+use Flarum\Flags\Api\Controller\DeleteFlagsController;
+use Flarum\Flags\Api\Controller\ListFlagsController;
 use Flarum\Post\Event\Saving as PostSaving;
 use Flarum\User\Event\Saving as UserSaving;
 use Flarum\User\User;
@@ -98,6 +101,21 @@ return [
         }),
 
     (new Extend\ApiController(Controller\ListNotificationsController::class))
+        ->prepareDataQuery(function($controller) {
+            Discussion::registerVisibilityScoper(new ScopeDiscussionVisibility(), 'view');
+        }),
+
+    (new Extend\ApiController(ListFlagsController::class))
+        ->prepareDataQuery(function($controller) {
+            Discussion::registerVisibilityScoper(new ScopeDiscussionVisibility(), 'view');
+        }),
+
+    (new Extend\ApiController(CreateFlagController::class))
+        ->prepareDataQuery(function($controller) {
+            Discussion::registerVisibilityScoper(new ScopeDiscussionVisibility(), 'view');
+        }),
+
+    (new Extend\ApiController(DeleteFlagsController::class))
         ->prepareDataQuery(function($controller) {
             Discussion::registerVisibilityScoper(new ScopeDiscussionVisibility(), 'view');
         }),
