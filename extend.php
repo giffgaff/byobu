@@ -80,22 +80,12 @@ return [
             Discussion::registerVisibilityScoper(new ScopeDiscussionVisibility(), 'view');
         }),
 
-    (new Extend\ApiController(Controller\DeleteDiscussionController::class))
-        ->prepareDataQuery(function($controller) {
-            Discussion::registerVisibilityScoper(new ScopeDiscussionVisibility(), 'view');
-        }),
-
     (new Extend\ApiController(Controller\CreatePostController::class))
         ->prepareDataQuery(function($controller) {
             Discussion::registerVisibilityScoper(new ScopeDiscussionVisibility(), 'view');
         }),
 
     (new Extend\ApiController(Controller\UpdatePostController::class))
-        ->prepareDataQuery(function($controller) {
-            Discussion::registerVisibilityScoper(new ScopeDiscussionVisibility(), 'view');
-        }),
-
-    (new Extend\ApiController(Controller\DeletePostController::class))
         ->prepareDataQuery(function($controller) {
             Discussion::registerVisibilityScoper(new ScopeDiscussionVisibility(), 'view');
         }),
@@ -111,11 +101,6 @@ return [
         }),
 
     (new Extend\ApiController(CreateFlagController::class))
-        ->prepareDataQuery(function($controller) {
-            Discussion::registerVisibilityScoper(new ScopeDiscussionVisibility(), 'view');
-        }),
-
-    (new Extend\ApiController(DeleteFlagsController::class))
         ->prepareDataQuery(function($controller) {
             Discussion::registerVisibilityScoper(new ScopeDiscussionVisibility(), 'view');
         }),
