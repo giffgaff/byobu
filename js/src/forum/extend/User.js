@@ -7,11 +7,30 @@ import Button from 'flarum/components/Button';
 import ItemList from 'flarum/utils/ItemList';
 import UserPage from 'flarum/components/UserPage';
 import LinkButton from 'flarum/components/LinkButton';
+import SessionDropdown from 'flarum/components/SessionDropdown';
 
 export default (app) => {
     attributes();
     message(app);
     sharedMessageHistory(app);
+    addToSessionDropdown();
+}
+
+function addToSessionDropdown() {
+    extend(SessionDropdown.prototype, 'items', function (items) {
+        if (!app.session.user) return;
+
+        const href = app.route('byobuUserPrivate', { username: app.session.user.username() });
+
+        items.add(
+            'session-pd-link',
+            LinkButton.component({
+                href,
+                icon: app.forum.data.attributes['byobu.icon-badge'],
+            }, app.translator.trans('fof-byobu.forum.user.byobu_link')),
+            85
+        );
+    });
 }
 
 function message(app) {
@@ -62,8 +81,6 @@ function sharedMessageHistory(app) {
 
         // Hide links from guests if they are not already on the page
         if (!app.session.user && m.route.get() !== href) return;
-        // Hide link for your own page.
-        if (app.session.user && app.session.user.username() === this.user.username()) return;
 
         items.add(
             'byobu',

@@ -51,9 +51,7 @@ class ByobuDiscussionSearcher extends DiscussionSearcher
             ->whereNull('recipients.removed_at')
             ->where('recipients.user_id', $actor->id);
 
-
-
-        if ($filterByUser) {
+        if ($filterByUser && $filterByUser->id !== $actor->id) {
             $filterByUserQuery = $this->discussions->query()
                 ->select('discussions.id')
                 ->join('recipients', 'recipients.discussion_id', '=', 'discussions.id')
