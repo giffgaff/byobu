@@ -63,7 +63,8 @@ class ByobuDiscussionSearcher extends DiscussionSearcher
             $query->whereIn('discussions.id', $filterByUserQuery);
         }
 
-        if ($this->flagsInstalled()
+        if (!$filterByUser
+            && $this->flagsInstalled()
             && $actor->hasPermission('user.viewPrivateDiscussionsWhenFlagged')
             && $actor->hasPermission('discussion.viewFlags')) {
             $query->orWhereIn('recipients.discussion_id', function ($query) {
