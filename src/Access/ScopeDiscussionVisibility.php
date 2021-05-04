@@ -30,6 +30,10 @@ class ScopeDiscussionVisibility
             return;
         }
 
+        if ($actor->getAttribute('bypassByobuScopeDiscussionVisibility')) {
+            return;
+        }
+
         $query->orWhereIn('discussions.id', function ($query) use ($actor) {
             $query->select('recipients.discussion_id')
                 ->from('recipients')

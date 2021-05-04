@@ -92,10 +92,12 @@ class ByobuDiscussionSearcher extends DiscussionSearcher
     {
         $isPrivate = in_array('is:private', explode(' ', $criteria->query));
 
+        $criteria->actor->setAttribute('bypassByobuScopeDiscussionVisibility', true);
         if ($isPrivate) {
             return $this->getPrivateDiscussions($criteria, $limit, $offset);
         }
-
-        return parent::search($criteria, $limit, $offset);
+        $search = parent::search($criteria, $limit, $offset);
+        $criteria->actor->setAttribute('bypassByobuScopeDiscussionVisibility', false);
+        return $search;
     }
 }
