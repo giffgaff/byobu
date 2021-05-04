@@ -23,9 +23,6 @@ use Flarum\Event\ConfigureDiscussionGambits;
 use Flarum\Flags\Api\Controller\DeleteFlagsController;
 use Flarum\Foundation\AbstractServiceProvider;
 use Flarum\Search\GambitManager;
-use FoF\Byobu\Api\Overrides\DeleteDiscussionControllerOverride;
-use FoF\Byobu\Api\Overrides\DeleteFlagsControllerOverride;
-use FoF\Byobu\Api\Overrides\DeletePostControllerOverride;
 use FoF\Byobu\Discussion\Screener;
 use FoF\Byobu\Discussion\Search\ByobuDiscussionSearcher;
 use Illuminate\Contracts\Container\Container;
@@ -57,10 +54,6 @@ class ByobuProvider extends AbstractServiceProvider
     {
         $this->fixGambits();
         $this->app->bind(DiscussionSearcher::class, ByobuDiscussionSearcher::class);
-        $this->app->bind(DeleteDiscussionController::class, DeleteDiscussionControllerOverride::class);
-        $this->app->bind(DeletePostController::class, DeletePostControllerOverride::class);
-        $this->app->bind(DeleteFlagsController::class, DeleteFlagsControllerOverride::class);
-
         $this->app->bind('byobu.screener', Screener::class);
     }
 }

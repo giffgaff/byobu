@@ -65,45 +65,10 @@ return [
         ->addInclude(['recipientUsers', 'oldRecipientUsers']),
 
     (new Extend\ApiController(Controller\ShowDiscussionController::class))
-        ->addInclude(['recipientUsers', 'oldRecipientUsers'])
-        ->prepareDataQuery(function($controller) {
-            Discussion::registerVisibilityScoper(new ScopeDiscussionVisibility(), 'view');
-        }),
+        ->addInclude(['recipientUsers', 'oldRecipientUsers']),
 
-    (new Extend\ApiController(Controller\CreateDiscussionController::class))
-        ->prepareDataQuery(function($controller) {
-            Discussion::registerVisibilityScoper(new ScopeDiscussionVisibility(), 'view');
-        }),
-
-    (new Extend\ApiController(Controller\UpdateDiscussionController::class))
-        ->prepareDataQuery(function($controller) {
-            Discussion::registerVisibilityScoper(new ScopeDiscussionVisibility(), 'view');
-        }),
-
-    (new Extend\ApiController(Controller\CreatePostController::class))
-        ->prepareDataQuery(function($controller) {
-            Discussion::registerVisibilityScoper(new ScopeDiscussionVisibility(), 'view');
-        }),
-
-    (new Extend\ApiController(Controller\UpdatePostController::class))
-        ->prepareDataQuery(function($controller) {
-            Discussion::registerVisibilityScoper(new ScopeDiscussionVisibility(), 'view');
-        }),
-
-    (new Extend\ApiController(Controller\ListNotificationsController::class))
-        ->prepareDataQuery(function($controller) {
-            Discussion::registerVisibilityScoper(new ScopeDiscussionVisibility(), 'view');
-        }),
-
-    (new Extend\ApiController(ListFlagsController::class))
-        ->prepareDataQuery(function($controller) {
-            Discussion::registerVisibilityScoper(new ScopeDiscussionVisibility(), 'view');
-        }),
-
-    (new Extend\ApiController(CreateFlagController::class))
-        ->prepareDataQuery(function($controller) {
-            Discussion::registerVisibilityScoper(new ScopeDiscussionVisibility(), 'view');
-        }),
+    (new Extend\ModelVisibility(Discussion::class))
+        ->scope(Access\ScopeDiscussionVisibility::class, 'viewPrivate'),
 
     (new Extend\ApiSerializer(Serializer\BasicDiscussionSerializer::class))
         ->hasMany('recipientUsers', Serializer\BasicUserSerializer::class)
