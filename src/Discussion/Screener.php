@@ -83,7 +83,9 @@ class Screener extends Fluent
             []
         ))->pluck('id');
 
-        return User::query()->whereIn('id', $ids)->get();
+        return new Collection($ids->map(function($id) {
+          return User::query()->findOrFail($id);
+        }));
     }
 
     final public static function relationName(string $type)
