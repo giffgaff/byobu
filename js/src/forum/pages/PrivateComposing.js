@@ -52,6 +52,10 @@ export default class PrivateComposing {
     }
 
     get canStartDiscussion() {
-        return app.session.user && app.forum.attribute('canStartPrivateDiscussion');
+        let canStart = app.session.user && app.forum.attribute('canStartPrivateDiscussion');
+        if (canStart &&  this.recipient) {
+            canStart = !this.recipient.blocksPd();
+        }
+        return canStart;
     }
 }
