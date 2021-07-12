@@ -105,6 +105,7 @@ return [
     (new Extend\Event())
         ->listen(DiscussionSaving::class, Listeners\PersistRecipients::class)
         ->listen(DiscussionSaving::class, Listeners\DropTagsOnPrivateDiscussions::class)
+        ->listen(PostSaving::class, Listeners\CheckForBlockedPd::class)
         ->listen(PostSaving::class, Listeners\IgnoreApprovals::class)
         ->listen(UserSaving::class, Listeners\SaveUserPreferences::class)
         ->listen(DiscussionWasSplit::class, Listeners\AddRecipientsToSplitDiscussion::class),

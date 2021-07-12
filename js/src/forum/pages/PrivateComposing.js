@@ -56,6 +56,9 @@ export default class PrivateComposing {
         if (canStart &&  this.recipient) {
             canStart = !this.recipient.blocksPd();
         }
+        if (canStart &&  app.session.user) {
+            canStart = !app.session.user.blocksPd();
+        }
         return canStart;
     }
 }

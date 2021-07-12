@@ -97,7 +97,7 @@ class Screener extends Fluent
     {
         return $this->users
             ->first(function (User $user) {
-                return $user->getPreference('blocksPd', false);
+                return $user->blocks_byobu_pd === 1;
             }) !== null;
     }
 
