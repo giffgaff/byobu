@@ -33,8 +33,9 @@ trait RecipientsConstraint
         }
 
         $query
+            ->where('is_private', '=', 1)
             // Do a subquery where for filtering.
-            ->orWhere(function ($query) use ($user, $includeFlagged) {
+            ->where(function ($query) use ($user, $includeFlagged) {
                 // Open access for is_private discussions when the user is
                 // part of the recipients either directly or through a group.
                 $this->forRecipient($query, $user->groups->pluck('id')->all(), $user->id);
@@ -62,7 +63,6 @@ trait RecipientsConstraint
         $query->whereIn('discussions.id', function ($query) use ($groupIds, $userId) {
             $query->select('recipients.discussion_id')
                 ->from('recipients')
-                ->whereNull('recipients.removed_at')
                 ->where(function ($query) use ($groupIds, $userId) {
                     $query
                         ->select('recipients.discussion_id')
@@ -70,7 +70,8 @@ trait RecipientsConstraint
                         ->when(!empty($groupIds), function ($query) use ($groupIds) {
                             $query->orWhereIn('recipients.group_id', $groupIds);
                         })->distinct();
-                })->distinct();
+                })->distinct()
+                ->whereNull('recipients.removed_at');
         });
     }
 
@@ -82,16 +83,13 @@ trait RecipientsConstraint
             $query
                 ->whereIn('discussions.id', function ($query) {
                     $query
-                        ->select('recipients.discussion_id')
-                        ->from('recipients')
-                        ->whereNull('recipients.removed_at');
-                    // .. and only if any of the contained posts are flagged
-                })
-                ->whereIn('discussions.id', function ($query) {
-                    $query
                         ->select('posts.discussion_id')
-                        ->from('flags')
-                        ->Join('posts', 'flags.post_id', 'posts.id')
+                        ->from('posts')
+                        ->whereIn('posts.id', function ($query) {
+                            $query->select('flags.post_id')
+                                ->from('flags')
+                                ->distinct();
+                        })
                         ->distinct();
                 });
         });
@@ -102,3 +100,4 @@ trait RecipientsConstraint
         return $this->extensionIsEnabled('flarum-flags') && class_exists(Flag::class);
     }
 }
+
